@@ -1,4 +1,4 @@
-# Teja Interactive Portfolio
+# Tejeswaar Interactive Portfolio
 
 An interactive developer portfolio built with Next.js and Supabase. This project extends beyond a traditional portfolio by introducing a hybrid identity system, real-time engagement tracking, and a dynamic leaderboard driven by user interaction and gameplay.
 
