@@ -31,9 +31,36 @@ export async function generateMetadata({
 
   if (!data) return { title: "Post Not Found" };
 
+  const description = data.content
+    .slice(0, 160)
+    .replace(/[#*`\[\]]/g, "")
+    .trim();
+  const postUrl = `https://tejeswaar.vercel.app/blog/${params.slug}`;
+
   return {
-    title: `${data.title} — Tejeswaar Reddy`,
-    description: data.content.slice(0, 160).replace(/[#*`\[\]]/g, ""),
+    title: data.title,
+    description,
+    openGraph: {
+      title: `${data.title} — Tejeswaar Reddy`,
+      description,
+      type: "article",
+      url: postUrl,
+      siteName: "Tejeswaar Reddy",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: data.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${data.title} — Tejeswaar Reddy`,
+      description,
+      images: ["/og-image.png"],
+    },
   };
 }
 

@@ -71,15 +71,18 @@ export async function POST(req: NextRequest) {
       // Update existing row
       const previousAchievements = existing.achievements || [];
       const updatedAchievements = [...previousAchievements];
+      
+      let earnedAchievementScore = 0;
       if (achievement && !updatedAchievements.includes(achievement)) {
         updatedAchievements.push(achievement);
+        earnedAchievementScore = achievement_score; // Only grant points once
       }
 
       const updates: Record<string, unknown> = {
         clicks: existing.clicks + clicks,
         active_seconds: existing.active_seconds + active_seconds,
         game_score: (existing.game_score || 0) + game_score,
-        achievement_score: (existing.achievement_score || 0) + achievement_score,
+        achievement_score: (existing.achievement_score || 0) + earnedAchievementScore,
         last_seen: new Date().toISOString(),
         achievements: updatedAchievements,
       };

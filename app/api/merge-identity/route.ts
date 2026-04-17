@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     // Find guest row
     const { data: guestRow } = await supabase
       .from("visitors")
-      .select("id, clicks, active_seconds, display_name")
+      .select("id, clicks, active_seconds, display_name, game_score, achievement_score, achievements")
       .eq("visitor_id", visitor_id)
       .is("user_id", null)
       .single();
@@ -33,17 +33,33 @@ export async function POST(req: NextRequest) {
     // Find existing user row
     const { data: userRow } = await supabase
       .from("visitors")
-      .select("id, clicks, active_seconds")
+      .select("id, clicks, active_seconds, game_score, achievement_score, achievements")
       .eq("user_id", user_id)
       .single();
 
     if (guestRow && userRow) {
       // Both exist → merge guest stats into user row, then delete guest
+      const mergedAchievements = Array.from(new Set([
+        ...(userRow.achievements || []),
+        ...(guestRow.achievements || [])
+      ]));
+      
+      const newAchievementScore = mergedAchievements.reduce((acc, ach) => {
+        // We know Green Dot = 200, Friends = 1000, PissedOff = 1000
+        if (ach === 'greenDotFound') return acc + 200;
+        if (ach === 'greenDotFriends') return acc + 1000;
+        if (ach === 'greenDotPissedOff') return acc + 1000;
+        return acc;
+      }, 0);
+
       const { error: updateErr } = await supabase
         .from("visitors")
         .update({
           clicks: userRow.clicks + guestRow.clicks,
           active_seconds: userRow.active_seconds + guestRow.active_seconds,
+          game_score: (userRow.game_score || 0) + (guestRow.game_score || 0),
+          achievement_score: newAchievementScore,
+          achievements: mergedAchievements,
           github_username: github_username || null,
           avatar_url: avatar_url || null,
           last_seen: new Date().toISOString(),

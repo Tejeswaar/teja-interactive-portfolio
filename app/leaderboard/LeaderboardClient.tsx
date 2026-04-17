@@ -153,12 +153,14 @@ function GuestPrompt({ visitorId, login }: { visitorId: string; login: () => voi
 export default function LeaderboardClient() {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [guestName, setGuestName] = useState<string | null>(null);
   const { isLoggedIn, user, visitor_id, login } = useIdentity();
 
   // Determine current user's identity value for highlighting
   const currentId = user?.user_metadata?.user_name || visitor_id;
 
   useEffect(() => {
+    setGuestName(localStorage.getItem("guest_display_name"));
     fetch("/api/leaderboard")
       .then((r) => r.json())
       .then((d) => {
@@ -167,6 +169,13 @@ export default function LeaderboardClient() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  const currentRankIndex = leaders.findIndex((entry) =>
+    (isLoggedIn && currentId && entry.github_username === currentId) ||
+    (!isLoggedIn && guestName && entry.display_name === guestName)
+  );
+  const currentUserEntry = currentRankIndex >= 0 ? leaders[currentRankIndex] : null;
+  const currentRank = currentRankIndex >= 0 ? currentRankIndex + 1 : null;
 
   return (
     <div className="min-h-screen bg-ctp-base">
@@ -208,6 +217,35 @@ export default function LeaderboardClient() {
           <GuestPrompt visitorId={visitor_id} login={login} />
         )}
 
+        {/* User Rank Card */}
+        {currentUserEntry && currentRank && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8 p-5 rounded-xl border border-ctp-green/40 bg-ctp-green/10 flex items-center justify-between shadow-[0_0_15px_rgba(166,227,161,0.1)]"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-ctp-green/20 flex items-center justify-center text-xl shadow-[0_0_10px_rgba(166,227,161,0.2)]">
+                {currentRank === 1 ? '🥇' : currentRank === 2 ? '🥈' : currentRank === 3 ? '🥉' : '🎖️'}
+              </div>
+              <div>
+                <p className="font-mono text-sm text-ctp-text">
+                  Your current rank is <strong className="text-ctp-green text-lg">#{currentRank}</strong>
+                </p>
+                <p className="text-[10px] font-mono text-ctp-overlay0">
+                  Keep exploring to climb the leaderboard!
+                </p>
+              </div>
+            </div>
+            <div className="text-right hidden sm:block">
+              <p className="font-mono text-sm text-ctp-text">Total Score</p>
+              <p className="font-mono text-xl font-bold text-ctp-green tabular-nums">
+                {currentUserEntry.score.toLocaleString()}
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Leaderboard table */}
         {loading ? (
           <div className="text-center py-20">
@@ -228,18 +266,18 @@ export default function LeaderboardClient() {
             <div className="grid grid-cols-[3rem_1fr_4rem_4rem_4rem_4rem_5rem] gap-2 px-4 py-2 text-[10px] font-mono text-ctp-overlay0 uppercase tracking-wider">
               <span>Rank</span>
               <span>Player</span>
-              <span className="text-right">Time</span>
-              <span className="text-right">Clicks</span>
-              <span className="text-right">Game</span>
-              <span className="text-right">Achv.</span>
-              <span className="text-right">Score</span>
+              <span className="text-center">Time</span>
+              <span className="text-center">Clicks</span>
+              <span className="text-center">Game</span>
+              <span className="text-center">Achv.</span>
+              <span className="text-center">Score</span>
             </div>
 
             {/* Rows */}
             {leaders.map((entry, i) => {
               const isCurrentUser =
-                entry.github_username === currentId ||
-                entry.display_name === currentId;
+                (isLoggedIn && currentId && entry.github_username === currentId) ||
+                (!isLoggedIn && guestName && entry.display_name === guestName);
               const medal =
                 i === 0
                   ? "🥇"
@@ -296,27 +334,28 @@ export default function LeaderboardClient() {
                   </div>
 
                   {/* Time */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-right tabular-nums">
+                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
                     {formatTime(entry.active_seconds || 0)}
                   </span>
 
                   {/* Clicks */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-right tabular-nums">
+                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
                     {(entry.clicks || 0).toLocaleString()}
                   </span>
 
                   {/* Game */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-right tabular-nums">
+                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
                     {(entry.game_score || 0).toLocaleString()}
+                    <span className="text-[10px] text-ctp-overlay0/50 ml-1">×5</span>
                   </span>
 
                   {/* Achievements */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-right tabular-nums">
+                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
                     {(entry.achievement_score || 0).toLocaleString()}
                   </span>
 
                   {/* Score */}
-                  <span className="font-mono text-sm font-bold text-ctp-mauve text-right tabular-nums">
+                  <span className="font-mono text-sm font-bold text-ctp-mauve text-center tabular-nums">
                     {(entry.score || 0).toLocaleString()}
                   </span>
                 </motion.div>

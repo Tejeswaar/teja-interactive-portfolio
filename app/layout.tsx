@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import EngagementTracker from "./components/EngagementTracker";
@@ -18,9 +18,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tejeswaar Reddy - Game Systems Programmer | Technical Artist",
+  metadataBase: new URL("https://tejeswaar.vercel.app"),
+  title: {
+    default: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
+    template: "%s — Tejeswaar Reddy",
+  },
   description:
-    "I build the systems that make worlds feel real - from low-level C++ engines to modular combat in Unreal Engine 5. Portfolio of Tejeswaar Reddy.",
+    "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
   keywords: [
     "game programmer",
     "game developer",
@@ -30,21 +34,39 @@ export const metadata: Metadata = {
     "game engine",
     "portfolio",
     "Tejeswaar Reddy",
+    "Unity",
+    "SDL2",
+    "GAS",
+    "Retina Engine",
+    "Land of Souls",
+    "MixMash",
   ],
   authors: [{ name: "Tejeswaar Reddy" }],
+  creator: "Tejeswaar Reddy",
   openGraph: {
-    title: "Tejeswaar Reddy - Game Systems Programmer",
+    title: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
     description:
-      "I build the systems that make worlds feel real - from low-level C++ engines to modular combat in Unreal Engine 5.",
+      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
     type: "website",
     locale: "en_US",
-    url: "https://tejeswaarreddy.dev",
+    url: "https://tejeswaar.vercel.app",
+    siteName: "Tejeswaar Reddy",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tejeswaar Reddy - Game Systems Programmer",
+    title: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
     description:
-      "I build the systems that make worlds feel real - from low-level C++ engines to modular combat in Unreal Engine 5.",
+      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

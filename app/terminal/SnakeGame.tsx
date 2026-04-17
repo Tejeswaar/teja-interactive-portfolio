@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useIdentity } from "../components/AuthProvider";
 
 const GRID_SIZE = 20;
 const INITIAL_SNAKE = [
@@ -12,8 +13,11 @@ const INITIAL_SNAKE = [
 const INITIAL_DIRECTION = { x: 0, y: -1 };
 const SPEED = 120;
 
+type Point = { x: number; y: number };
+
 export default function SnakeGame({ onClose }: { onClose: () => void }) {
-  const [snake, setSnake] = useState(INITIAL_SNAKE);
+  const { getIdentityPayload } = useIdentity();
+  const [snake, setSnake] = useState<Point[]>(INITIAL_SNAKE);
   const [_direction, setDirection] = useState(INITIAL_DIRECTION);
   const [food, setFood] = useState({ x: 5, y: 5 });
   const [gameOver, setGameOver] = useState(false);
@@ -175,6 +179,19 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
     return () => clearInterval(gameInterval);
   }, [food, gameOver, paused, gameStarted, countdown, generateFood]);
 
+  useEffect(() => {
+    if (gameOver && score > 0) {
+      const identity = getIdentityPayload();
+      if (identity.visitor_id || identity.user_id) {
+        fetch("/api/leaderboard", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...identity, game_score: score, clicks: 0, active_seconds: 0 }),
+        }).catch(() => {});
+      }
+    }
+  }, [gameOver, score, getIdentityPayload]);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -195,7 +212,7 @@ export default function SnakeGame({ onClose }: { onClose: () => void }) {
           <h2 className="text-ctp-green font-bold flex gap-2">
             🐍 <span className="hidden sm:inline">TERMINAL SNAKE</span>
           </h2>
-          <div className="text-ctp-text">Score: <span className="text-ctp-peach">{score}</span></div>
+          <div className="text-ctp-text mr-6">Score: <span className="text-ctp-peach">{score}</span></div>
         </div>
 
         <div 

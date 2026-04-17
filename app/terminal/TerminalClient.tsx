@@ -20,6 +20,7 @@ const MOTD: Line[] = [
 ];
 
 export default function TerminalClient() {
+  const { getIdentityPayload } = useIdentity();
   const [lines, setLines] = useState<Line[]>([...MOTD]);
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<string[]>([]);
@@ -403,12 +404,12 @@ export default function TerminalClient() {
           // Save game score
           const score = result.state.finalScore;
           if (score > 0) {
-            const visitorId = localStorage.getItem("visitor_id");
-            if (visitorId) {
+            const identity = getIdentityPayload();
+            if (identity.visitor_id || identity.user_id) {
               fetch("/api/leaderboard", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ visitor_id: visitorId, game_score: score, clicks: 0, active_seconds: 0 }),
+                body: JSON.stringify({ ...identity, game_score: score, clicks: 0, active_seconds: 0 }),
               })
                 .then((res) => {
                   if (res.ok) {

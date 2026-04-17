@@ -60,6 +60,7 @@ export interface Project {
   github?: string;
   live?: string;
   demo?: string;
+  playStore?: string;
 }
 
 export const projects: Project[] = [
@@ -94,6 +95,7 @@ export const projects: Project[] = [
     tags: ["Unity", "C#", "Mobile", "Google Play"],
     status: "SHIPPED",
     statusDetail: "5,000+ downloads",
+    playStore: "https://play.google.com/store/apps/details?id=com.setkeygames.mixmash&pcampaignid=web_share",
   },
 ];
 
