@@ -77,13 +77,13 @@ export default function TopNav() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-32 bg-ctp-crust border border-ctp-surface1 rounded-lg shadow-xl p-1 z-50">
+                <div className="absolute right-0 mt-4 w-32 bg-ctp-crust border border-ctp-surface1 rounded-lg shadow-xl p-1.5 z-50">
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
                       logout();
                     }}
-                    className="w-full text-center px-4 py-2 font-mono text-sm font-semibold text-ctp-red bg-transparent hover:bg-ctp-surface0 hover:text-ctp-maroon transition-all rounded-md"
+                    className="w-full text-center px-4 py-3 font-mono text-sm font-semibold text-ctp-red bg-transparent hover:bg-ctp-surface0 hover:text-ctp-maroon transition-all rounded-md"
                   >
                     Logout
                   </button>

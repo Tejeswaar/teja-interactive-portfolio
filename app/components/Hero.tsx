@@ -50,7 +50,11 @@ const badgeColors: Record<string, string> = {
 /* ─── Social link data ───────────────── */
 const socialLinks = [
   { label: "GitHub", href: links.github, path: "/logos/github.png" },
-  { label: "ArtStation", href: links.artstation, path: "/logos/artstation.png" },
+  {
+    label: "ArtStation",
+    href: links.artstation,
+    path: "/logos/artstation.png",
+  },
   { label: "The Rookies", href: links.rookies, path: "/logos/rookies.png" },
   { label: "YouTube", href: links.youtube, path: "/logos/youtube.png" },
   { label: "Resume", href: links.resume, path: "/logos/resume.png" },
@@ -75,29 +79,31 @@ export default function Hero() {
       className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden"
     >
       {/* Background grain overlay */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+      <div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.5'/%3E%3C/svg%3E")`,
         }}
       />
 
+      <div className="relative z-10 max-w-4xl text-center flex flex-col items-center">
+        {/* Subtle background glow behind text */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[150%] max-w-lg bg-ctp-mauve/20 blur-[100px] rounded-full pointer-events-none" />
 
-
-      <div className="relative z-10 max-w-3xl text-center">
         {/* Typewriter greeting */}
-        <h1 className="font-mono text-4xl sm:text-5xl md:text-6xl font-bold text-ctp-text mb-4 min-h-[1.2em]">
+        <h1 className="relative font-sans text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-ctp-lavender via-ctp-blue to-ctp-teal mb-6 min-h-[1.2em] leading-tight drop-shadow-sm">
           {displayed}
-          <span className="typewriter-cursor" />
+          <span className="typewriter-cursor text-ctp-blue ml-1" />
         </h1>
 
         {/* Role cycler */}
         {done && (
           <motion.p
             key={roleKey}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="font-mono text-xl sm:text-2xl text-ctp-blue mb-6"
+            initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative font-sans text-2xl sm:text-3xl md:text-4xl font-semibold text-ctp-text mb-8 tracking-wide"
           >
             {currentRole}
           </motion.p>
@@ -106,10 +112,10 @@ export default function Hero() {
         {/* Tagline */}
         {done && (
           <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-ctp-subtext0 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed mb-8"
+            initial={{ opacity: 0, filter: "blur(4px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="relative font-sans text-ctp-subtext0 text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed mb-10 px-4"
           >
             {identity.tagline}
           </motion.p>
@@ -135,7 +141,13 @@ export default function Hero() {
                   transition-all duration-300 text-sm font-mono"
               >
                 <div className="flex items-center justify-center min-w-[20px]">
-                  <Image src={link.path} alt={link.label} width={20} height={20} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                  <Image
+                    src={link.path}
+                    alt={link.label}
+                    width={20}
+                    height={20}
+                    className="opacity-70 group-hover:opacity-100 transition-opacity"
+                  />
                 </div>
                 <span className="text-ctp-subtext1 group-hover:text-ctp-text transition-colors">
                   {link.label}
