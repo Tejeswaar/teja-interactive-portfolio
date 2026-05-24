@@ -84,10 +84,6 @@ export const metadata: Metadata = {
       "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (10K+ downloads). Building Retina Engine & Land of Souls.",
     images: ["/og-image.png"],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
 };
 
 export default function RootLayout({
