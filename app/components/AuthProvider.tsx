@@ -135,22 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await executeLogin();
   }, [executeLogin]);
 
-  // Login with Another Account
-  const loginWithAnotherAccount = useCallback(async () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("privacy_accepted", "true");
-    }
-    await supabase.current.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: window.location.origin + "/api/auth/callback",
-        queryParams: {
-          prompt: "consent",
-        },
-      },
-    });
-  }, []);
-
   // Logout
   const logout = useCallback(async () => {
     await supabase.current.auth.signOut();

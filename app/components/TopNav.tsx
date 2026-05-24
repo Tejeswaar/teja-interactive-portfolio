@@ -18,7 +18,7 @@ const navLinks = [
 
 export default function TopNav() {
   const pathname = usePathname();
-  const { isLoggedIn, user, login, logout, loginWithAnotherAccount } = useIdentity();
+  const { isLoggedIn, user, login, logout } = useIdentity();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // Keep terminal immersive: no global nav overlay.
@@ -27,7 +27,10 @@ export default function TopNav() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-        <Link href="/#hero" className="font-mono text-sm font-bold text-ctp-blue hover:text-ctp-lavender transition-colors">
+        <Link
+          href="/#hero"
+          className="font-mono text-sm font-bold text-ctp-blue hover:text-ctp-lavender transition-colors"
+        >
           ~/tejeswaar
         </Link>
         <div className="hidden sm:flex items-center gap-6">
@@ -52,20 +55,13 @@ export default function TopNav() {
                   alt="avatar"
                   className="w-5 h-5 rounded-full"
                 />
-                <span className="hidden md:inline">{user.user_metadata?.user_name}</span>
+                <span className="hidden md:inline">
+                  {user.user_metadata?.user_name}
+                </span>
               </button>
-              
+
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-ctp-crust border border-ctp-surface1 rounded-md shadow-lg py-1 z-50">
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      loginWithAnotherAccount();
-                    }}
-                    className="w-full text-left px-4 py-2 font-mono text-xs text-ctp-text hover:bg-ctp-surface0 transition-colors"
-                  >
-                    Use another account
-                  </button>
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
