@@ -25,8 +25,6 @@ interface Identity {
   loading: boolean;
   /** Sign in with GitHub OAuth */
   login: () => Promise<void>;
-  /** Sign in with another GitHub account */
-  loginWithAnotherAccount: () => Promise<void>;
   /** Sign out */
   logout: () => Promise<void>;
   /** Returns the identifier to use in API calls */
@@ -159,7 +157,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoggedIn: !!user,
         loading,
         login,
-        loginWithAnotherAccount,
         logout,
         getIdentityPayload,
       }}
