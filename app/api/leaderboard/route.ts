@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
       achievement_score = 0,
       display_name,
       achievement,
+      theme,
     } = body;
 
     const identity = resolveIdentity(body);
@@ -89,6 +90,9 @@ export async function POST(req: NextRequest) {
       if (display_name && display_name !== existing.display_name) {
         updates.display_name = display_name;
       }
+      if (theme) {
+        updates.theme = theme;
+      }
 
       const { error } = await supabase
         .from("visitors")
@@ -108,7 +112,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Create new visitor row via insert
       const name = display_name || generateDisplayName();
-      const insertData: Record<string, unknown> = {
+      const newRow: Record<string, unknown> = {
         [identity.column]: identity.value,
         clicks,
         active_seconds,
@@ -117,8 +121,12 @@ export async function POST(req: NextRequest) {
         display_name: name,
         achievements: achievement ? [achievement] : [],
       };
+      
+      if (theme) {
+        newRow.theme = theme;
+      }
 
-      const { error } = await supabase.from("visitors").insert(insertData);
+      const { error } = await supabase.from("visitors").insert(newRow);
 
       if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -130,7 +138,7 @@ export async function POST(req: NextRequest) {
         totalSeconds: active_seconds,
         totalGameScore: game_score,
         totalAchievementScore: achievement_score,
-        achievements: insertData.achievements,
+        achievements: newRow.achievements,
       });
     }
   } catch {

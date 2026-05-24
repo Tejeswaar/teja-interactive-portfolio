@@ -1,0 +1,33 @@
+What Makes This Website Special?
+
+Most developer portfolios act as digital brochures. I wanted this website to be an interactive playground—a true reflection of a developer’s environment that goes beyond just listing skills. What makes it genuinely special is its deep immersion and premium aesthetic. 
+
+I’ve incorporated a highly customizable "hacker/terminal" vibe, completely supported by dynamic CSS theme switching. Visitors can easily toggle between custom environments like Catppuccin, Vim, VS Code Dark, and Light mode without a loss of performance or aesthetic polish. Additionally, I focused on deep social integrations via robust Open Graph / Twitter Card meta tags, meaning the portfolio looks incredibly professional when shared anywhere on the web. It's built to "WOW" anyone from the very first click.
+
+The Idea Behind the Website
+
+I wanted to bridge the gap between "resume" and "application." The core idea was to build a space that showcases my technical skills by actually *using* them to entertain and engage the user. Instead of simply stating, "I know React and Databases," I built an environment where users can play a built-in terminal Snake game, switch access roles (Client vs. Admin), and directly interact with a custom course-builder content system. The goal was to prove my abilities through an interactive showcase that recruiters, peers, and fellow developers would actually enjoy exploring.
+
+How I Gamified the Experience
+
+The entire portfolio is built around "The Green Dot" narrative arc. To gamify the site, I turned exploration into a rewarding challenge:
+- Hidden Easter Eggs: Visitors have to explore the site to unlock hidden interactions and discover secrets.
+- GitHub Authentication: Using Supabase, users can securely log in via GitHub to track their progress.
+- Cloud-Synced Achievements: Once logged in, discovering secrets triggers achievements that are synced to a cloud database.
+- Global Leaderboard: As users find easter eggs and unlock achievements, they accumulate points. These points are dynamically reflected on a persistent, global leaderboard, creating competitive engagement among visitors.
+
+Built-In Mini-Games
+
+To truly push the "interactive playground" concept, I built fully playable games directly into the portfolio's terminal environment:
+- Terminal Snake: A fully functional classic Snake game integrated directly into the custom terminal UI, letting users take a break and play right from the command line interface.
+- Hammurabi (1973 BASIC Port): I ported the absolute classic text-based resource management game, Hammurabi, into modern TypeScript. Users take on the role of an ancient Sumerian ruler, managing land, grain, and population over a 10-year period, complete with random events like plagues and rat infestations. It’s an interactive homage to early computing history seamlessly embedded into the site.
+
+Tech Stack
+
+The whole experience is powered by a modern, high-performance web stack:
+- Core Framework: Next.js 14 (App Router) & React 18
+- Language: TypeScript for robust, type-safe development
+- Database & Auth: Supabase (PostgreSQL) handling real-time database syncing, role-based access control, and GitHub OAuth.
+- Styling: Tailwind CSS paired with a custom ThemeProvider for dynamic, CSS-variable-based theming.
+- Animations: Framer Motion for adding premium, seamless micro-animations and page transitions to make the site feel "alive."
+- API / Integrations: Dynamic API routes for real-time data persistence and custom GitHub Commit tracking.

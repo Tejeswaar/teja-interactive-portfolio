@@ -4,6 +4,8 @@ import "./globals.css";
 import EngagementTracker from "./components/EngagementTracker";
 import TopNav from "./components/TopNav";
 import { AuthProvider } from "./components/AuthProvider";
+import { ThemeProvider } from "./components/ThemeProvider";
+import KonamiProvider from "./components/KonamiProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,13 +20,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://tejeswaar.vercel.app"),
+  metadataBase: new URL("https://tejeswaar.me"),
   title: {
     default: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
     template: "%s — Tejeswaar Reddy",
   },
   description:
-    "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
+    "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (10K+ downloads). Building Retina Engine & Land of Souls.",
   keywords: [
     "game programmer",
     "game developer",
@@ -46,10 +48,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
     description:
-      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
+      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (10K+ downloads). Building Retina Engine & Land of Souls.",
     type: "website",
     locale: "en_US",
-    url: "https://tejeswaar.vercel.app",
     siteName: "Tejeswaar Reddy",
     images: [
       {
@@ -65,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tejeswaar Reddy — Game Systems Programmer & Technical Artist",
     description:
-      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (5K+ downloads). Building Retina Engine & Land of Souls.",
+      "Systems-focused game developer skilled in Unreal Engine (GAS/C++), Unity, and SDL2. Shipped MixMash (10K+ downloads). Building Retina Engine & Land of Souls.",
     images: ["/og-image.png"],
   },
   robots: {
@@ -85,12 +86,16 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-ctp-base text-ctp-text`}
       >
         <AuthProvider>
-          <TopNav />
+          <ThemeProvider>
+            <KonamiProvider>
+              <TopNav />
 
-          <main>{children}</main>
+              <main>{children}</main>
 
-          {/* Engagement tracker (popups + time tracking) */}
-          <EngagementTracker />
+              {/* Engagement tracker (popups + time tracking) */}
+              <EngagementTracker />
+            </KonamiProvider>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

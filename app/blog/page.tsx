@@ -10,7 +10,6 @@ export const metadata: Metadata = {
     title: "Blog — Tejeswaar Reddy",
     description:
       "Thoughts on game development, engine programming, and technical art by Tejeswaar Reddy.",
-    url: "https://tejeswaar.vercel.app/blog",
     siteName: "Tejeswaar Reddy",
     images: [
       {

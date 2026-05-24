@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { startGame, processInput, type GameState } from "../lib/hamurabi";
 import SnakeGame from "./SnakeGame";
 import { useIdentity } from "../components/AuthProvider";
+import confetti from "canvas-confetti";
 
 type LineType = "output" | "input" | "error" | "accent" | "success" | "warning";
 type Line = { text: string; type: LineType };
@@ -51,7 +52,7 @@ export default function TerminalClient() {
     }
     
     // Check if green dot is friendly
-    if (localStorage.getItem("greenDotFriendly") === "true") {
+    if (localStorage.getItem("greenDotFriends") === "true") {
       setGreenStoryState("friendly");
     }
   }, []);
@@ -86,7 +87,6 @@ export default function TerminalClient() {
       
       if (newSlowCount >= 3) {
          setGreenStoryState("friendly");
-         localStorage.setItem("greenDotFriendly", "true");
          setGreenDotTransform({ x: 0, y: 0 });
          triggerPopup(
            <div className="flex flex-col gap-1">
@@ -98,9 +98,9 @@ export default function TerminalClient() {
          if (!localStorage.getItem("greenDotFriends")) {
            localStorage.setItem("greenDotFriends", "true");
            window.dispatchEvent(new CustomEvent("achievement-unlocked", { detail: { id: "greenDotFriends" } }));
-           const visitorId = localStorage.getItem("visitor_id");
-           if (visitorId) {
-              fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitor_id: visitorId, achievement_score: 1000, clicks: 0, active_seconds: 0, achievement: "greenDotFriends" }) });
+           const identity = getIdentityPayload();
+           if (identity.visitor_id || identity.user_id) {
+              fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...identity, achievement_score: 1000, clicks: 0, active_seconds: 0, achievement: "greenDotFriends" }) });
               setLines(prev => [
                 ...prev, 
                 { text: "", type: "output" },
@@ -130,9 +130,9 @@ export default function TerminalClient() {
         if (!localStorage.getItem("greenDotFound")) {
           localStorage.setItem("greenDotFound", "true");
           window.dispatchEvent(new CustomEvent("achievement-unlocked", { detail: { id: "greenDotFound" } }));
-          const visitorId = localStorage.getItem("visitor_id");
-          if (visitorId) {
-             fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitor_id: visitorId, achievement_score: 200, clicks: 0, active_seconds: 0, achievement: "greenDotFound" }) });
+          const identity = getIdentityPayload();
+          if (identity.visitor_id || identity.user_id) {
+             fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...identity, achievement_score: 200, clicks: 0, active_seconds: 0, achievement: "greenDotFound" }) });
              setLines(prev => [
                ...prev,
                { text: "", type: "output" },
@@ -203,9 +203,9 @@ export default function TerminalClient() {
         if (!localStorage.getItem("greenDotPissedOff")) {
            localStorage.setItem("greenDotPissedOff", "true");
            window.dispatchEvent(new CustomEvent("achievement-unlocked", { detail: { id: "greenDotPissedOff" } }));
-           const visitorId = localStorage.getItem("visitor_id");
-           if (visitorId) {
-              fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ visitor_id: visitorId, achievement_score: 1000, clicks: 0, active_seconds: 0, achievement: "greenDotPissedOff" }) });
+           const identity = getIdentityPayload();
+           if (identity.visitor_id || identity.user_id) {
+              fetch("/api/leaderboard", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...identity, achievement_score: 1000, clicks: 0, active_seconds: 0, achievement: "greenDotPissedOff" }) });
               setLines(prev => [
                 ...prev, 
                 { text: "", type: "output" },
@@ -285,17 +285,25 @@ export default function TerminalClient() {
       const outLines: Line[] = [
         { text: "Available commands:", type: "output" },
         { text: "  whoami         — Who am I?", type: "output" },
+        { text: "  status         — Live availability & focus", type: "output" },
         { text: "  ls projects    — List projects", type: "output" },
+        { text: "  open <slug>    — Open a project page directly", type: "output" },
         { text: "  cat about      — Read about me", type: "output" },
         { text: "  skills         — Skill breakdown", type: "output" },
         { text: "  contact        — Contact info", type: "output" },
         { text: "  blog           — Recent blog posts", type: "output" },
+        { text: "  git log        — Recent GitHub commits", type: "output" },
         { text: "  leaderboard    — Top visitors", type: "output" },
         { text: "  play hamurabi  — Play the classic game", type: "output" },
-        { text: "  setname <name> — Set your display name", type: "output" },
+        ...(isLoggedIn ? [] : [{ text: "  setname <name> — Set your display name", type: "output" as LineType }]),
         { text: "  neofetch       — System info", type: "output" },
         { text: "  clear          — Clear terminal", type: "output" },
         { text: "  exit           — Back to portfolio", type: "output" },
+        { text: "", type: "output" },
+        { text: "Secret commands:", type: "warning" },
+        { text: "  sudo hire me", type: "accent" },
+        { text: "  sudo apt install teja", type: "accent" },
+        { text: "  ping teja", type: "accent" },
       ];
       
       if (qDone) {
@@ -372,6 +380,16 @@ export default function TerminalClient() {
         ""
       ]);
     },
+    "where to find snake game": () => addOutput([
+      "Press the yellow dot.", "",
+    ]),
+    status: () => addOutput([
+      "🟢 ONLINE",
+      "Current Focus : Retina Engine (C++ / SDL2)",
+      "Availability  : Open to new roles",
+      "Timezone      : IST (India Standard Time)",
+      "Latency       : Low", "",
+    ]),
   }), [addLines, addOutput]);
 
   // ─── Main command router ──────────────────
@@ -667,6 +685,10 @@ export default function TerminalClient() {
 
       // setname
       if (lower.startsWith("setname ")) {
+        if (isLoggedIn) {
+          addLines([{ text: "Admin users cannot change the visitor display name.", type: "error" }]);
+          return;
+        }
         const name = trimmed.slice(8).trim();
         if (name) {
           const visitorId = localStorage.getItem("visitor_id");
@@ -684,6 +706,125 @@ export default function TerminalClient() {
           }
           return;
         }
+      }
+
+      // sudo hire me
+      if (lower === "sudo hire me") {
+        addLines([
+          { text: "Verifying credentials...", type: "warning" },
+          { text: "Bypassing mainframe...", type: "warning" },
+        ]);
+        setTimeout(() => {
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.6 },
+            colors: ["#a6e3a1", "#89b4fa", "#f9e2af", "#f38ba8"],
+          });
+          addLines([
+            { text: "Verifying credentials...", type: "warning" },
+            { text: "Bypassing mainframe...", type: "warning" },
+            { text: "ACCESS GRANTED. Welcome to the team.", type: "success" },
+          ]);
+          setTimeout(() => {
+            window.open("https://mail.google.com/mail/?view=cm&fs=1&to=tejeswaarreddy@gmail.com", "_blank");
+          }, 1500);
+        }, 1000);
+        return;
+      }
+
+      // sudo apt install teja
+      if (lower === "sudo apt install teja") {
+        addLines([
+          { text: "Reading package lists... Done", type: "output" },
+          { text: "Building dependency tree... Done", type: "output" },
+          { text: "The following NEW packages will be installed:", type: "output" },
+          { text: "  teja c++-god-mode coffee-addict ue5-expert", type: "accent" },
+        ]);
+        setTimeout(() => {
+          addLines([
+            { text: "Get:1 http://tejeswaar.me/apt teja 2.0.0 [1337 kB]", type: "output" },
+            { text: "Fetched 1337 kB in 1s (1337 kB/s)", type: "output" },
+            { text: "Selecting previously unselected package teja.", type: "output" },
+            { text: "[▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% Installing teja...", type: "success" },
+            { text: "Installation complete. Opening communication channel...", type: "success" },
+          ]);
+          setTimeout(() => {
+            window.open("https://mail.google.com/mail/?view=cm&fs=1&to=tejeswaarreddy@gmail.com", "_blank");
+          }, 1500);
+        }, 1500);
+        return;
+      }
+
+      // ping teja
+      if (lower === "ping teja") {
+        addLines([{ text: "PING teja (127.0.0.1) 56(84) bytes of data.", type: "output" }]);
+        let pings = 0;
+        const interval = setInterval(() => {
+          pings++;
+          addLines([
+            { text: `64 bytes from teja: icmp_seq=${pings} ttl=118 time=${(Math.random() * 20 + 10).toFixed(1)} ms`, type: "output" },
+          ]);
+          if (pings >= 3) {
+            clearInterval(interval);
+            setTimeout(() => {
+              addLines([
+                { text: "", type: "output" },
+                { text: "--- teja ping statistics ---", type: "output" },
+                { text: "3 packets transmitted, 3 received, 0% packet loss", type: "output" },
+                { text: "Connection solid. Initiating contact...", type: "success" },
+              ]);
+              setTimeout(() => {
+                window.open("https://mail.google.com/mail/?view=cm&fs=1&to=tejeswaarreddy@gmail.com", "_blank");
+              }, 1500);
+            }, 500);
+          }
+        }, 800);
+        return;
+      }
+
+      // open <project>
+      if (lower.startsWith("open ")) {
+        const target = lower.slice(5).trim();
+        const validProjects = ["questboard", "mix-mash", "retina-engine", "land-of-souls"];
+        if (validProjects.includes(target)) {
+          addLines([{ text: `Opening project: ${target}...`, type: "success" }]);
+          setTimeout(() => {
+            router.push(`/projects/${target}`);
+          }, 500);
+        } else {
+          addLines([{ text: `Project '${target}' not found. Try 'ls projects'.`, type: "error" }]);
+        }
+        return;
+      }
+
+      // git log
+      if (lower === "git log") {
+        addLines([{ text: "Fetching recent commits from GitHub...", type: "warning" }]);
+        try {
+          const res = await fetch("https://api.github.com/users/tejeswaar/events/public");
+          if (!res.ok) throw new Error("Rate limited");
+          const events = await res.json();
+          const pushEvents = events.filter((e: any) => e.type === "PushEvent").slice(0, 3);
+          
+          if (pushEvents.length > 0) {
+            const logLines: Line[] = [{ text: "Recent commits:", type: "success" }];
+            pushEvents.forEach((ev: any) => {
+              ev.payload.commits.forEach((c: any) => {
+                logLines.push({ text: `commit ${c.sha.slice(0, 7)}`, type: "accent" });
+                logLines.push({ text: `Date:   ${new Date(ev.created_at).toLocaleString()}`, type: "output" });
+                logLines.push({ text: `    ${c.message}`, type: "output" });
+                logLines.push({ text: "", type: "output" });
+              });
+            });
+            addLines(logLines);
+          } else {
+            addLines([{ text: "No recent public commits found.", type: "output" }]);
+          }
+        } catch {
+          addLines([{ text: "Failed to fetch from GitHub API (rate limited).", type: "error" }]);
+        }
+        return;
       }
 
       // Unknown command

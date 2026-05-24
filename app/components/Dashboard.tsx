@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,9 +6,12 @@ import Link from "next/link";
 import { identity, links } from "../lib/content";
 import type { GitHubCommit, LanguageStat } from "../lib/github";
 import { useIdentity } from "./AuthProvider";
+import { useTheme } from "./ThemeProvider";
+import ThemeChanger from "./ThemeChanger";
 
 const connectEmail = "tejeswaarreddy@gmail.com";
-const connectMailto = `mailto:${connectEmail}?subject=${encodeURIComponent("Saw your portfolio")}&body=${encodeURIComponent("Hi Tejeswaar,\nI came across your portfolio and really liked your work. I'd love to connect and explore potential opportunities to collaborate.\n\nBest regards,\n")}`;
+const connectSubject = encodeURIComponent("Saw your portfolio");
+const connectBody = encodeURIComponent("Hi Tejeswaar,\n\nI came across your portfolio and really liked your work. I'd love to connect and explore potential opportunities to collaborate.\n\nBest regards,\n");
 
 /* â”€â”€â”€ Global Click Counter (Supabase-backed) â”€ */
 function GlobalClickCounter() {
@@ -118,6 +121,26 @@ function GlobalClickCounter() {
 
 /* â”€â”€â”€ Let's Connect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function ConnectCard() {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const gmailLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${connectEmail}&su=${connectSubject}&body=${connectBody}`;
+  const outlookLink = `https://outlook.live.com/mail/0/deeplink/compose?to=${connectEmail}&subject=${connectSubject}&body=${connectBody}`;
+  const defaultMailto = `mailto:${connectEmail}?subject=${connectSubject}&body=${connectBody}`;
+
   return (
     <div className="rounded-xl border border-ctp-surface1/40 bg-ctp-surface0/20 p-5">
       <h3 className="font-mono text-sm font-bold text-ctp-text mb-2 flex items-center gap-2">
@@ -126,12 +149,56 @@ function ConnectCard() {
       <p className="text-xs text-ctp-subtext0 mb-4 leading-relaxed">
         Always open to interesting projects and conversations.
       </p>
-      <a
-        href={connectMailto}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-ctp-blue/40 bg-ctp-blue/10 hover:bg-ctp-blue/20 transition-all font-mono text-xs text-ctp-blue"
-      >
-        Book a Chat
-      </a>
+      
+      <div className="relative inline-block" ref={dropdownRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-ctp-blue/40 bg-ctp-blue/10 hover:bg-ctp-blue/20 transition-all font-mono text-xs text-ctp-blue"
+        >
+          Book a Chat
+          <svg className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full left-0 mt-2 p-1 bg-ctp-surface0 border border-ctp-surface1 rounded-lg shadow-lg flex flex-col min-w-[140px] z-50"
+            >
+              <a
+                href={gmailLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 text-xs font-mono text-ctp-text hover:text-ctp-blue hover:bg-ctp-surface1 rounded transition-colors text-left flex items-center gap-2"
+              >
+                Gmail
+              </a>
+              <a
+                href={outlookLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 text-xs font-mono text-ctp-text hover:text-ctp-blue hover:bg-ctp-surface1 rounded transition-colors text-left flex items-center gap-2"
+              >
+                Outlook
+              </a>
+              <a
+                href={defaultMailto}
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 text-xs font-mono text-ctp-text hover:text-ctp-blue hover:bg-ctp-surface1 rounded transition-colors text-left flex items-center gap-2"
+              >
+                Default Mail App
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -229,12 +296,14 @@ function LeaderboardWidget() {
 /* â”€â”€â”€ User Stats Card (horizontal, full-width) â”€â”€ */
 function UserStatsCard() {
   const { isLoggedIn, user, visitor_id, login, logout, loading: authLoading } = useIdentity();
+  const { setTheme } = useTheme();
   const [stats, setStats] = useState<{
     clicks: number;
     active_seconds: number;
     game_score: number;
     score: number;
     rank: number | null;
+    theme?: string;
   } | null>(null);
 
   // Fetch stats on load
@@ -257,6 +326,9 @@ function UserStatsCard() {
               localStorage.setItem(id, "true");
             });
             window.dispatchEvent(new CustomEvent("achievement-unlocked"));
+          }
+          if (d.stats.theme) {
+            setTheme(d.stats.theme as any);
           }
           setStats(d.stats); 
         } 
@@ -604,8 +676,8 @@ export default function Dashboard({
 
   return (
     <section id="dashboard" ref={sectionRef} className="reveal py-24 px-6 max-w-5xl mx-auto">
-      <h2 className="font-mono text-2xl text-ctp-blue mb-2 flex items-center gap-2">
-        <span className="text-ctp-mauve">04.</span> dashboard
+      <h2 className="font-sans text-3xl md:text-4xl font-black tracking-tighter text-ctp-text mb-4 uppercase">
+        DASHBOARD<span className="text-ctp-mauve">.</span>
       </h2>
       <div className="section-divider mb-10" />
 
@@ -636,6 +708,7 @@ export default function Dashboard({
         </div>
         <UserStatsCard />
         {/* UserStatsCard handles its own col-span-2 */}
+        <ThemeChanger />
       </div>
     </section>
   );

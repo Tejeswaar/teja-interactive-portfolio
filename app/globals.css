@@ -1,58 +1,92 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Default theme variables (Catppuccin Mocha) — RGB triplets for Tailwind opacity */
+:root {
+  --ctp-base: 30 30 46;
+  --ctp-mantle: 24 24 37;
+  --ctp-crust: 17 17 27;
+  --ctp-surface0: 49 50 68;
+  --ctp-surface1: 69 71 90;
+  --ctp-surface2: 88 91 112;
+  --ctp-overlay0: 108 112 134;
+  --ctp-overlay1: 127 132 156;
+  --ctp-overlay2: 147 153 178;
+  --ctp-subtext0: 166 173 200;
+  --ctp-subtext1: 186 194 222;
+  --ctp-text: 205 214 244;
+  --ctp-blue: 137 180 250;
+  --ctp-lavender: 180 190 254;
+  --ctp-sapphire: 116 199 236;
+  --ctp-sky: 137 220 235;
+  --ctp-teal: 148 226 213;
+  --ctp-green: 166 227 161;
+  --ctp-yellow: 249 226 175;
+  --ctp-peach: 250 179 135;
+  --ctp-maroon: 235 160 172;
+  --ctp-red: 243 139 168;
+  --ctp-mauve: 203 166 247;
+  --ctp-pink: 245 194 231;
+  --ctp-flamingo: 242 205 205;
+  --ctp-rosewater: 245 224 220;
+  --scrollbar-track: #1e1e2e;
+  --scrollbar-thumb: #45475a;
+  --scrollbar-thumb-hover: #585b70;
+}
 
 /* Base */
 html {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: #45475a #1e1e2e;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
 body {
-  background-color: #1e1e2e;
-  color: #cdd6f4;
+  background-color: rgb(var(--ctp-base));
+  color: rgb(var(--ctp-text));
   font-family: var(--font-inter), "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
-  background-color: rgba(137, 180, 250, 0.3);
-  color: #cdd6f4;
+  background-color: rgb(var(--ctp-blue) / 0.3);
+  color: rgb(var(--ctp-text));
 }
 
 ::-webkit-scrollbar {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e1e2e;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #45475a;
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #585b70;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Utilities */
 @layer utilities {
   .glass {
-    background: rgba(30, 30, 46, 0.6);
+    background: rgb(var(--ctp-base) / 0.6);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(69, 71, 90, 0.4);
+    border: 1px solid rgb(var(--ctp-surface1) / 0.4);
   }
 
   .glow-blue {
-    box-shadow: 0 0 15px rgba(137, 180, 250, 0.15),
-      0 0 30px rgba(137, 180, 250, 0.05);
+    box-shadow: 0 0 15px rgb(var(--ctp-blue) / 0.15),
+      0 0 30px rgb(var(--ctp-blue) / 0.05);
   }
 
   .glow-mauve {
-    box-shadow: 0 0 15px rgba(203, 166, 247, 0.15),
-      0 0 30px rgba(203, 166, 247, 0.05);
+    box-shadow: 0 0 15px rgb(var(--ctp-mauve) / 0.15),
+      0 0 30px rgb(var(--ctp-mauve) / 0.05);
   }
 }
 
@@ -70,18 +104,19 @@ body {
 /* Section divider */
 .section-divider {
   height: 1px;
-  background: #45475a;
+  background: rgb(var(--ctp-surface1));
 }
 
 /* Project card hover */
 .project-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease,
-    border-color 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              border-color 0.3s ease;
 }
 .project-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(137, 180, 250, 0.1);
-  border-color: rgba(137, 180, 250, 0.4);
+  transform: translate(-4px, -6px);
+  box-shadow: 8px 8px 0px 0px rgb(var(--ctp-mauve));
+  border-color: rgb(var(--ctp-mauve));
 }
 
 /* Skill bar animation */
@@ -101,7 +136,7 @@ body {
   display: inline-block;
   width: 3px;
   height: 1.1em;
-  background-color: #89b4fa;
+  background-color: rgb(var(--ctp-blue));
   margin-left: 2px;
   vertical-align: text-bottom;
   animation: blink 1s step-end infinite;
@@ -117,7 +152,7 @@ body {
   transition: background 0.2s ease;
 }
 .commit-row:hover {
-  background: rgba(69, 71, 90, 0.3);
+  background: rgb(var(--ctp-surface1) / 0.3);
 }
 
 /* Click counter */
@@ -130,14 +165,14 @@ body {
 
 /* Blog prose styling */
 .prose-custom {
-  color: #bac2de;
+  color: rgb(var(--ctp-subtext1));
   line-height: 1.8;
   font-size: 0.95rem;
 }
 .prose-custom h1,
 .prose-custom h2,
 .prose-custom h3 {
-  color: #cdd6f4;
+  color: rgb(var(--ctp-text));
   font-family: var(--font-jetbrains), "JetBrains Mono", monospace;
   font-weight: 700;
   margin-top: 2em;
@@ -148,22 +183,22 @@ body {
 .prose-custom h3 { font-size: 1.15rem; }
 .prose-custom p { margin-bottom: 1.2em; }
 .prose-custom a {
-  color: #89b4fa;
+  color: rgb(var(--ctp-blue));
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-.prose-custom a:hover { color: #b4befe; }
+.prose-custom a:hover { color: rgb(var(--ctp-lavender)); }
 .prose-custom code {
-  background: rgba(69, 71, 90, 0.5);
+  background: rgb(var(--ctp-surface1) / 0.5);
   padding: 0.15em 0.4em;
   border-radius: 4px;
   font-size: 0.85em;
   font-family: var(--font-jetbrains), "JetBrains Mono", monospace;
-  color: #f38ba8;
+  color: rgb(var(--ctp-red));
 }
 .prose-custom pre {
-  background: #11111b;
-  border: 1px solid rgba(69, 71, 90, 0.5);
+  background: rgb(var(--ctp-crust));
+  border: 1px solid rgb(var(--ctp-surface1) / 0.5);
   border-radius: 8px;
   padding: 1em;
   overflow-x: auto;
@@ -172,12 +207,12 @@ body {
 .prose-custom pre code {
   background: none;
   padding: 0;
-  color: #cdd6f4;
+  color: rgb(var(--ctp-text));
 }
 .prose-custom blockquote {
-  border-left: 3px solid #89b4fa;
+  border-left: 3px solid rgb(var(--ctp-blue));
   padding-left: 1em;
-  color: #a6adc8;
+  color: rgb(var(--ctp-subtext0));
   margin: 1.5em 0;
 }
 .prose-custom ul,
@@ -194,7 +229,7 @@ body {
 .prose-custom hr {
   border: none;
   height: 1px;
-  background: #45475a;
+  background: rgb(var(--ctp-surface1));
   margin: 2em 0;
 }
 
@@ -205,7 +240,7 @@ body {
   padding-bottom: 56.25%;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(69, 71, 90, 0.5);
+  border: 1px solid rgb(var(--ctp-surface1) / 0.5);
 }
 .youtube-embed iframe {
   position: absolute;

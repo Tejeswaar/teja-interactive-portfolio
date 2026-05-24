@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
     const { data: user, error } = await supabase
       .from("visitors")
       .select(
-        "display_name, clicks, active_seconds, game_score, score, avatar_url, github_username, last_seen, achievements"
+        "display_name, clicks, active_seconds, game_score, score, avatar_url, github_username, last_seen, achievements, theme"
       )
       .eq(column, value)
       .single();
@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
           score: 0,
           rank: null,
           achievements: [],
+          theme: "catppuccin",
         },
       });
     }
@@ -62,6 +63,7 @@ export async function GET(req: NextRequest) {
         score: user.score || 0,
         avatar_url: user.avatar_url || null,
         achievements: user.achievements || [],
+        theme: user.theme || "catppuccin",
         rank,
       },
     });

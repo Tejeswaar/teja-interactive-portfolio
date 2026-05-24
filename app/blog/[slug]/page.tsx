@@ -35,7 +35,6 @@ export async function generateMetadata({
     .slice(0, 160)
     .replace(/[#*`\[\]]/g, "")
     .trim();
-  const postUrl = `https://tejeswaar.vercel.app/blog/${params.slug}`;
 
   return {
     title: data.title,
@@ -44,7 +43,6 @@ export async function generateMetadata({
       title: `${data.title} — Tejeswaar Reddy`,
       description,
       type: "article",
-      url: postUrl,
       siteName: "Tejeswaar Reddy",
       images: [
         {
