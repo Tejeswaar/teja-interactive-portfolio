@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createClient } from "../../utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import PrivacyConsentModal from "./PrivacyConsentModal";
 
 /* ─── Types ─── */
 interface Identity {
@@ -24,6 +25,8 @@ interface Identity {
   loading: boolean;
   /** Sign in with GitHub OAuth */
   login: () => Promise<void>;
+  /** Sign in with another GitHub account */
+  loginWithAnotherAccount: () => Promise<void>;
   /** Sign out */
   logout: () => Promise<void>;
   /** Returns the identifier to use in API calls */
@@ -52,6 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const merging = useRef(false);
   const supabase = useRef(createClient());
 
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
   // Initialize visitor_id
   useEffect(() => {
     setVisitorId(getOrCreateVisitorId());
@@ -59,19 +64,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Listen for auth state changes
   useEffect(() => {
-    const sb = supabase.current;
-
-    // Get initial session
-    sb.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    supabase.current.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user || null);
       setLoading(false);
     });
 
-    // Listen for changes (login / logout)
     const {
       data: { subscription },
-    } = sb.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.current.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
       setLoading(false);
     });
 
@@ -82,10 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (loading || !user || !visitor_id) return;
 
-    const mergeKey = `merged_${user.id}`;
+    const mergeKey = `merged_${visitor_id}_${user.id}`;
     if (localStorage.getItem(mergeKey) === "true") return;
-    if (merging.current) return;
 
+    if (merging.current) return;
     merging.current = true;
 
     fetch("/api/merge-identity", {
@@ -94,9 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({
         visitor_id,
         user_id: user.id,
-        github_username:
+        display_name:
+          user.user_metadata?.full_name ||
           user.user_metadata?.user_name ||
-          user.user_metadata?.preferred_username ||
           user.email?.split("@")[0] ||
           "user",
         avatar_url: user.user_metadata?.avatar_url || null,
@@ -113,12 +114,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
   }, [loading, user, visitor_id]);
 
-  // Login with GitHub
-  const login = useCallback(async () => {
+  const executeLogin = useCallback(async () => {
     await supabase.current.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: window.location.origin + "/api/auth/callback",
+      },
+    });
+  }, []);
+
+  // Login with GitHub
+  const login = useCallback(async () => {
+    if (typeof window !== "undefined") {
+      const accepted = localStorage.getItem("privacy_accepted");
+      if (!accepted) {
+        setShowPrivacyModal(true);
+        return;
+      }
+    }
+    await executeLogin();
+  }, [executeLogin]);
+
+  // Login with Another Account
+  const loginWithAnotherAccount = useCallback(async () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("privacy_accepted", "true");
+    }
+    await supabase.current.auth.signInWithOAuth({
+      provider: "github",
+      options: {
+        redirectTo: window.location.origin + "/api/auth/callback",
+        queryParams: {
+          prompt: "consent",
+        },
       },
     });
   }, []);
@@ -147,11 +175,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoggedIn: !!user,
         loading,
         login,
+        loginWithAnotherAccount,
         logout,
         getIdentityPayload,
       }}
     >
       {children}
+      <PrivacyConsentModal 
+        isOpen={showPrivacyModal} 
+        onAccept={() => {
+          if (typeof window !== "undefined") {
+            localStorage.setItem("privacy_accepted", "true");
+          }
+          setShowPrivacyModal(false);
+          executeLogin();
+        }}
+        onDecline={() => setShowPrivacyModal(false)}
+      />
     </IdentityContext.Provider>
   );
 }
