@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MobileNavClient from "./MobileNav";
@@ -20,6 +20,22 @@ export default function TopNav() {
   const pathname = usePathname();
   const { isLoggedIn, user, login, logout } = useIdentity();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Handle clicking outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   // Keep terminal immersive: no global nav overlay.
   if (pathname?.startsWith("/terminal")) return null;
@@ -45,7 +61,7 @@ export default function TopNav() {
           ))}
 
           {isLoggedIn && user ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-2 font-mono text-xs text-ctp-overlay1 hover:text-ctp-text transition-colors p-1"
@@ -61,13 +77,13 @@ export default function TopNav() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-ctp-crust border border-ctp-surface1 rounded-md shadow-lg py-1 z-50">
+                <div className="absolute right-0 mt-2 w-32 bg-ctp-crust border border-ctp-surface1 rounded-lg shadow-xl p-1 z-50">
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
                       logout();
                     }}
-                    className="w-full text-left px-4 py-2 font-mono text-xs text-ctp-red hover:bg-ctp-surface0 transition-colors"
+                    className="w-full text-center px-4 py-2 font-mono text-sm font-semibold text-ctp-red bg-transparent hover:bg-ctp-surface0 hover:text-ctp-maroon transition-all rounded-md"
                   >
                     Logout
                   </button>
