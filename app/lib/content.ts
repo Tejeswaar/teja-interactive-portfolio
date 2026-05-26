@@ -64,8 +64,8 @@ export const links = {
   github: "https://github.com/tejeswaar",
   artstation: "https://artstation.com/tejeswaar",
   rookies: "https://therookies.co/tejeswaar",
-  youtube: "https://youtube.com/@tejeswaar",
-  resume: "https://drive.google.com/file/d/11wzT0wru3nvntGwH6sIHSW3CZezROEjo/view?usp=sharing",
+  youtube: "https://youtu.be/x1ihQ2FLSSY?si=15murQB3CLRvtalK",
+  resume: "/Resume",
 };
 
 export const statusTags = [

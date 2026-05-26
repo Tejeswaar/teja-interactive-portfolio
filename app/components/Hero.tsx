@@ -127,7 +127,7 @@ export default function Hero() {
               <a
                 key={link.label}
                 href={link.href}
-                target={link.href.startsWith("http") ? "_blank" : undefined}
+                target={link.href.startsWith("http") || link.href === "/Resume" ? "_blank" : undefined}
                 rel="noopener noreferrer"
                 className="group flex items-center gap-2 px-4 py-2 rounded-lg
                   border border-ctp-surface1/50 bg-ctp-surface0/30
