@@ -6,7 +6,7 @@ import { useIdentity } from "./AuthProvider";
 
 const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   catppuccin: "Inspired by the warm, pastel-heavy Catppuccin Mocha palette. Soft on the eyes, highly readable, and aesthetically pleasing.",
-  vim: "A high-contrast, pure black hacker aesthetic. Inspired by retro terminals and classic Vim color schemes.",
+  vim: "A high-contrast, classic Vim color scheme. Inspired by retro terminals and hacker aesthetics.",
   vscode: "The ubiquitous VS Code Dark+ theme. Familiar, professional, and balanced with cool blue accents.",
   light: "A clean, modern light mode with crisp contrast. Perfect for reading in bright environments.",
 };
