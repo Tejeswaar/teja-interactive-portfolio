@@ -38,50 +38,28 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (guestRow && userRow) {
-      // Both exist → merge guest stats into user row, then delete guest
-      const mergedAchievements = Array.from(new Set([
-        ...(userRow.achievements || []),
-        ...(guestRow.achievements || [])
-      ]));
-      
-      const newAchievementScore = mergedAchievements.reduce((acc, ach) => {
-        // We know Green Dot = 200, Friends = 1000, PissedOff = 1000
-        if (ach === 'greenDotFound') return acc + 200;
-        if (ach === 'greenDotFriends') return acc + 1000;
-        if (ach === 'greenDotPissedOff') return acc + 1000;
-        return acc;
-      }, 0);
+      // Both exist → user already has an account. Do NOT merge or delete.
+      // The guest row may belong to someone else (e.g. friend's computer).
 
-      const { error: updateErr } = await supabase
-        .from("visitors")
-        .update({
-          clicks: userRow.clicks + guestRow.clicks,
-          active_seconds: userRow.active_seconds + guestRow.active_seconds,
-          game_score: (userRow.game_score || 0) + (guestRow.game_score || 0),
-          achievement_score: newAchievementScore,
-          achievements: mergedAchievements,
-          display_name: github_username || display_name || guestRow.display_name,
-          github_username: github_username || null,
-          avatar_url: avatar_url || null,
-          last_seen: new Date().toISOString(),
-        })
-        .eq("id", userRow.id);
-
-      if (updateErr) {
-        return NextResponse.json(
-          { error: "Failed to merge: " + updateErr.message },
-          { status: 500 }
-        );
+      // Update metadata on the existing user row (avatar, username, etc.)
+      const updateData: Record<string, unknown> = {
+        github_username: github_username || null,
+        avatar_url: avatar_url || null,
+        last_seen: new Date().toISOString(),
+      };
+      if (github_username) {
+        updateData.display_name = github_username;
       }
-
-      // Safe to delete guest row now
-      await supabase.from("visitors").delete().eq("id", guestRow.id);
+      await supabase
+        .from("visitors")
+        .update(updateData)
+        .eq("id", userRow.id);
 
       return NextResponse.json({
         success: true,
-        action: "merged",
-        clicks: userRow.clicks + guestRow.clicks,
-        active_seconds: userRow.active_seconds + guestRow.active_seconds,
+        action: "already_exists",
+        clicks: userRow.clicks,
+        active_seconds: userRow.active_seconds,
       });
     } else if (guestRow && !userRow) {
       // Only guest exists → upgrade it to a user row

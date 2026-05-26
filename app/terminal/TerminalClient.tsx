@@ -51,11 +51,35 @@ export default function TerminalClient() {
       try { setLines(JSON.parse(savedLines)); } catch {}
     }
     
-    // Check if green dot is friendly
+    // Check if green dot is friendly (from localStorage first for instant load)
     if (localStorage.getItem("greenDotFriends") === "true") {
       setGreenStoryState("friendly");
     }
   }, []);
+
+  // Sync achievements from DB → localStorage so green dot state persists across devices
+  useEffect(() => {
+    const identity = getIdentityPayload();
+    const params = new URLSearchParams();
+    if (identity.user_id) params.set("user_id", identity.user_id);
+    else if (identity.visitor_id) params.set("visitor_id", identity.visitor_id);
+    else return;
+
+    fetch(`/api/user-stats?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.stats?.achievements) {
+          d.stats.achievements.forEach((id: string) => {
+            localStorage.setItem(id, "true");
+          });
+          // Update green dot state if DB says we're friends
+          if (d.stats.achievements.includes("greenDotFriends")) {
+            setGreenStoryState("friendly");
+          }
+        }
+      })
+      .catch(() => {});
+  }, [getIdentityPayload]);
 
   // Save terminal lines to session storage whenever they change
   useEffect(() => {

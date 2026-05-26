@@ -65,7 +65,7 @@ export const links = {
   artstation: "https://artstation.com/tejeswaar",
   rookies: "https://therookies.co/tejeswaar",
   youtube: "https://youtu.be/x1ihQ2FLSSY?si=15murQB3CLRvtalK",
-  resume: "/Resume",
+  resume: "/Resume/Tejeswaar%20Reddy%20Resume%20.pdf",
 };
 
 export const statusTags = [
@@ -111,6 +111,10 @@ export interface Project {
   live?: string;
   demo?: string;
   playStore?: string;
+  collab?: {
+    name: string;
+    url: string;
+  };
 }
 
 export const projects: Project[] = [
@@ -179,6 +183,10 @@ export const projects: Project[] = [
     status: "SHIPPED",
     statusDetail: "10,000+ downloads",
     playStore: "https://play.google.com/store/apps/details?id=com.setkeygames.mixmash&pcampaignid=web_share",
+    collab: {
+      name: "Tharros Game Studio",
+      url: "https://www.tharrosgamestudio.com/",
+    },
   },
 ];
 

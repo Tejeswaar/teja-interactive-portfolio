@@ -7,6 +7,7 @@ import { useIdentity } from "../components/AuthProvider";
 
 interface LeaderboardEntry {
   user_id?: string;
+  visitor_id?: string;
   display_name: string;
   clicks: number;
   active_seconds: number;
@@ -15,6 +16,7 @@ interface LeaderboardEntry {
   score: number;
   avatar_url?: string;
   github_username?: string;
+  rank: number;
 }
 
 function formatTime(seconds: number): string {
@@ -151,29 +153,148 @@ function GuestPrompt({ visitorId, login }: { visitorId: string; login: () => voi
   );
 }
 
+// ─── Display row for a single leaderboard entry ───
+function LeaderboardRow({
+  entry,
+  isCurrentUser,
+  animationIndex,
+}: {
+  entry: LeaderboardEntry;
+  isCurrentUser: boolean;
+  animationIndex: number;
+}) {
+  const rank = entry.rank;
+  const medal =
+    rank === 1
+      ? "🥇"
+      : rank === 2
+      ? "🥈"
+      : rank === 3
+      ? "🥉"
+      : `${rank}`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: animationIndex * 0.04 }}
+      className={`grid grid-cols-[3rem_1fr_4rem_4rem_4rem_4rem_5rem] gap-2 items-center px-4 py-3 rounded-xl border transition-all ${
+        isCurrentUser
+          ? "border-ctp-green/50 bg-ctp-green/10"
+          : rank <= 3
+          ? "border-ctp-yellow/20 bg-ctp-surface0/30"
+          : "border-ctp-surface1/30 bg-ctp-surface0/10 hover:bg-ctp-surface0/20"
+      }`}
+    >
+      {/* Rank */}
+      <span
+        className={`font-mono text-sm font-bold ${
+          rank <= 3 ? "text-ctp-yellow" : "text-ctp-overlay0"
+        }`}
+      >
+        {medal}
+      </span>
+
+      {/* Player */}
+      <div className="flex items-center gap-2 min-w-0">
+        {entry.avatar_url ? (
+          <img
+            src={entry.avatar_url}
+            alt=""
+            className="w-6 h-6 rounded-full shrink-0"
+          />
+        ) : (
+          <span className="w-6 h-6 rounded-full bg-ctp-surface1 shrink-0 flex items-center justify-center text-[10px]">
+            👤
+          </span>
+        )}
+        <span className="font-mono text-xs text-ctp-text truncate">
+          {entry.github_username || entry.display_name}
+          {isCurrentUser && (
+            <span className="ml-1 text-ctp-green text-[10px]">
+              (you)
+            </span>
+          )}
+        </span>
+      </div>
+
+      {/* Time */}
+      <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
+        {formatTime(entry.active_seconds || 0)}
+      </span>
+
+      {/* Clicks */}
+      <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
+        {(entry.clicks || 0).toLocaleString()}
+      </span>
+
+      {/* Game */}
+      <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
+        {(entry.game_score || 0).toLocaleString()}
+        <span className="text-[10px] text-ctp-overlay0/50 ml-1">×5</span>
+      </span>
+
+      {/* Achievements */}
+      <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
+        {(entry.achievement_score || 0).toLocaleString()}
+      </span>
+
+      {/* Score */}
+      <span className="font-mono text-sm font-bold text-ctp-mauve text-center tabular-nums">
+        {(entry.score || 0).toLocaleString()}
+      </span>
+    </motion.div>
+  );
+}
+
 export default function LeaderboardClient() {
-  const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
+  const [top10, setTop10] = useState<LeaderboardEntry[]>([]);
+  const [userContext, setUserContext] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [totalPlayers, setTotalPlayers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [guestName, setGuestName] = useState<string | null>(null);
   const { isLoggedIn, user, visitor_id, login } = useIdentity();
 
   useEffect(() => {
     setGuestName(localStorage.getItem("guest_display_name"));
-    fetch("/api/leaderboard")
+
+    // Build query params
+    const params = new URLSearchParams();
+    if (user?.id) {
+      params.set("user_id", user.id);
+    } else if (visitor_id) {
+      params.set("visitor_id", visitor_id);
+    }
+
+    const url = `/api/leaderboard${params.toString() ? `?${params}` : ""}`;
+
+    fetch(url)
       .then((r) => r.json())
       .then((d) => {
-        setLeaders(d.leaderboard || []);
+        setTop10(d.top10 || []);
+        setUserContext(d.userContext || []);
+        setUserRank(d.userRank ?? null);
+        setTotalPlayers(d.totalPlayers ?? 0);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, []);
+  }, [user, visitor_id]);
 
-  const currentRankIndex = leaders.findIndex((entry) =>
-    (isLoggedIn && user && entry.user_id === user.id) ||
-    (!isLoggedIn && guestName && entry.display_name === guestName)
-  );
-  const currentUserEntry = currentRankIndex >= 0 ? leaders[currentRankIndex] : null;
-  const currentRank = currentRankIndex >= 0 ? currentRankIndex + 1 : null;
+  // Find the user's entry from whichever list it's in
+  const findCurrentUser = (entry: LeaderboardEntry) => {
+    if (isLoggedIn && user) return entry.user_id === user.id;
+    if (!isLoggedIn && guestName) return entry.display_name === guestName;
+    return false;
+  };
+
+  const currentUserEntry =
+    top10.find(findCurrentUser) || userContext.find(findCurrentUser) || null;
+
+  // Determine if we need a gap separator
+  const showGap = userContext.length > 0 && userContext[0].rank > 11;
+  // Determine if context is a seamless continuation (rank 11 starts right after top 10)
+  const isSeamless = userContext.length > 0 && userContext[0].rank === 11;
 
   return (
     <div className="min-h-screen bg-ctp-base">
@@ -215,8 +336,8 @@ export default function LeaderboardClient() {
           <GuestPrompt visitorId={visitor_id} login={login} />
         )}
 
-        {/* User Rank Card */}
-        {currentUserEntry && currentRank && (
+        {/* User Rank Card — shown when user IS on the leaderboard */}
+        {currentUserEntry && userRank && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -224,11 +345,16 @@ export default function LeaderboardClient() {
           >
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-ctp-green/20 flex items-center justify-center text-xl shadow-[0_0_10px_rgba(166,227,161,0.2)]">
-                {currentRank === 1 ? '🥇' : currentRank === 2 ? '🥈' : currentRank === 3 ? '🥉' : '🎖️'}
+                {userRank === 1 ? '🥇' : userRank === 2 ? '🥈' : userRank === 3 ? '🥉' : '🎖️'}
               </div>
               <div>
                 <p className="font-mono text-sm text-ctp-text">
-                  Your current rank is <strong className="text-ctp-green text-lg">#{currentRank}</strong>
+                  Your current rank is <strong className="text-ctp-green text-lg">#{userRank}</strong>
+                  {totalPlayers > 0 && (
+                    <span className="text-ctp-overlay1 text-xs ml-2">
+                      out of {totalPlayers.toLocaleString()} players
+                    </span>
+                  )}
                 </p>
                 <p className="text-[10px] font-mono text-ctp-overlay0">
                   Keep exploring to climb the leaderboard!
@@ -244,6 +370,39 @@ export default function LeaderboardClient() {
           </motion.div>
         )}
 
+        {/* Not ranked yet — shown when user is NOT on the leaderboard */}
+        {!loading && !currentUserEntry && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8 p-5 rounded-xl border border-ctp-surface1/40 bg-ctp-surface0/20 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-ctp-surface1/40 flex items-center justify-center text-xl">
+                📊
+              </div>
+              <div>
+                <p className="font-mono text-sm text-ctp-text font-medium">
+                  You&apos;re not on the leaderboard yet
+                </p>
+                <p className="text-[10px] font-mono text-ctp-overlay0 mt-0.5">
+                  {isLoggedIn
+                    ? "Play any game to earn your spot on the leaderboard!"
+                    : "Login via GitHub or play any game to earn your spot on the leaderboard!"}
+                </p>
+              </div>
+            </div>
+            {!isLoggedIn && (
+              <button
+                onClick={login}
+                className="px-4 py-2 rounded-lg border border-ctp-mauve/40 bg-ctp-mauve/10 hover:bg-ctp-mauve/20 transition-all font-mono text-xs text-ctp-mauve shrink-0"
+              >
+                Login with GitHub
+              </button>
+            )}
+          </motion.div>
+        )}
+
         {/* Leaderboard table */}
         {loading ? (
           <div className="text-center py-20">
@@ -251,7 +410,7 @@ export default function LeaderboardClient() {
               Loading leaderboard...
             </p>
           </div>
-        ) : leaders.length === 0 ? (
+        ) : top10.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-4xl mb-4">👻</p>
             <p className="font-mono text-sm text-ctp-overlay0">
@@ -271,94 +430,37 @@ export default function LeaderboardClient() {
               <span className="text-center">Score</span>
             </div>
 
-            {/* Rows */}
-            {leaders.map((entry, i) => {
-              const isCurrentUser =
-                (isLoggedIn && user && entry.user_id === user.id) ||
-                (!isLoggedIn && guestName && entry.display_name === guestName);
-              const medal =
-                i === 0
-                  ? "🥇"
-                  : i === 1
-                  ? "🥈"
-                  : i === 2
-                  ? "🥉"
-                  : `${i + 1}`;
+            {/* Top 10 rows */}
+            {top10.map((entry, i) => (
+              <LeaderboardRow
+                key={`top-${entry.rank}`}
+                entry={entry}
+                isCurrentUser={findCurrentUser(entry)}
+                animationIndex={i}
+              />
+            ))}
 
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className={`grid grid-cols-[3rem_1fr_4rem_4rem_4rem_4rem_5rem] gap-2 items-center px-4 py-3 rounded-xl border transition-all ${
-                    isCurrentUser
-                      ? "border-ctp-green/50 bg-ctp-green/10"
-                      : i < 3
-                      ? "border-ctp-yellow/20 bg-ctp-surface0/30"
-                      : "border-ctp-surface1/30 bg-ctp-surface0/10 hover:bg-ctp-surface0/20"
-                  }`}
-                >
-                  {/* Rank */}
-                  <span
-                    className={`font-mono text-sm font-bold ${
-                      i < 3 ? "text-ctp-yellow" : "text-ctp-overlay0"
-                    }`}
-                  >
-                    {medal}
-                  </span>
+            {/* Gap separator — only when user context doesn't start at rank 11 */}
+            {showGap && (
+              <div className="flex items-center gap-3 py-3 px-4">
+                <div className="flex-1 border-t border-ctp-surface1/40" />
+                <span className="font-mono text-[10px] text-ctp-overlay0">
+                  · · ·
+                </span>
+                <div className="flex-1 border-t border-ctp-surface1/40" />
+              </div>
+            )}
 
-                  {/* Player */}
-                  <div className="flex items-center gap-2 min-w-0">
-                    {entry.avatar_url ? (
-                      <img
-                        src={entry.avatar_url}
-                        alt=""
-                        className="w-6 h-6 rounded-full shrink-0"
-                      />
-                    ) : (
-                      <span className="w-6 h-6 rounded-full bg-ctp-surface1 shrink-0 flex items-center justify-center text-[10px]">
-                        👤
-                      </span>
-                    )}
-                    <span className="font-mono text-xs text-ctp-text truncate">
-                      {entry.github_username || entry.display_name}
-                      {isCurrentUser && (
-                        <span className="ml-1 text-ctp-green text-[10px]">
-                          (you)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Time */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
-                    {formatTime(entry.active_seconds || 0)}
-                  </span>
-
-                  {/* Clicks */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
-                    {(entry.clicks || 0).toLocaleString()}
-                  </span>
-
-                  {/* Game */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
-                    {(entry.game_score || 0).toLocaleString()}
-                    <span className="text-[10px] text-ctp-overlay0/50 ml-1">×5</span>
-                  </span>
-
-                  {/* Achievements */}
-                  <span className="font-mono text-xs text-ctp-subtext0 text-center tabular-nums">
-                    {(entry.achievement_score || 0).toLocaleString()}
-                  </span>
-
-                  {/* Score */}
-                  <span className="font-mono text-sm font-bold text-ctp-mauve text-center tabular-nums">
-                    {(entry.score || 0).toLocaleString()}
-                  </span>
-                </motion.div>
-              );
-            })}
+            {/* User context rows (seamless or after gap) */}
+            {(isSeamless || showGap) &&
+              userContext.map((entry, i) => (
+                <LeaderboardRow
+                  key={`ctx-${entry.rank}`}
+                  entry={entry}
+                  isCurrentUser={findCurrentUser(entry)}
+                  animationIndex={top10.length + i}
+                />
+              ))}
           </div>
         )}
 

@@ -100,12 +100,18 @@ function ProjectCard({
         </div>
 
         {project.statusDetail && (
-          <p className="text-xs font-mono text-ctp-overlay1 mb-3">
+          <p className="text-xs font-mono text-ctp-overlay1 mb-2">
             ↳ {project.statusDetail}
           </p>
         )}
 
         <p className="text-sm text-ctp-subtext0 leading-relaxed mb-5 flex-1 line-clamp-3">
+          {project.collab && (
+            <>
+              Developed in collaboration with{" "}
+              <a href={project.collab.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-ctp-text font-medium hover:text-ctp-blue border-b border-ctp-surface2 hover:border-ctp-blue transition-all pb-[1px]">{project.collab.name}</a>.{" "}
+            </>
+          )}
           {project.fullDescription || project.description}
         </p>
 

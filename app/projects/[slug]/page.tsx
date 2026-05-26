@@ -135,6 +135,12 @@ export default function ProjectPage({ params }: { params: { slug: string } }) {
         <div className="mb-12">
           <h2 className="font-mono text-2xl font-bold text-ctp-mauve mb-6">{project.name}</h2>
           <p className="text-base text-ctp-subtext0 leading-relaxed font-mono">
+            {project.collab && (
+              <>
+                Developed in collaboration with{" "}
+                <a href={project.collab.url} target="_blank" rel="noopener noreferrer" className="text-ctp-text font-medium hover:text-ctp-blue border-b border-ctp-surface2 hover:border-ctp-blue transition-all pb-[1px]">{project.collab.name}</a>.{" "}
+              </>
+            )}
             {project.fullDescription || project.description}
           </p>
         </div>
