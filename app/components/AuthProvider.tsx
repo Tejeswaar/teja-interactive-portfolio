@@ -93,9 +93,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({
         visitor_id,
         user_id: user.id,
+        github_username: user.user_metadata?.user_name || null,
         display_name:
-          user.user_metadata?.full_name ||
           user.user_metadata?.user_name ||
+          user.user_metadata?.full_name ||
           user.email?.split("@")[0] ||
           "user",
         avatar_url: user.user_metadata?.avatar_url || null,

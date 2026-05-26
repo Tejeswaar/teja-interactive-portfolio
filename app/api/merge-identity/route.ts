@@ -11,7 +11,7 @@ import { createAdminClient } from "../../lib/admin";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { visitor_id, user_id, github_username, avatar_url } = body;
+    const { visitor_id, user_id, github_username, avatar_url, display_name } = body;
 
     if (!visitor_id || !user_id) {
       return NextResponse.json(
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
           game_score: (userRow.game_score || 0) + (guestRow.game_score || 0),
           achievement_score: newAchievementScore,
           achievements: mergedAchievements,
+          display_name: github_username || display_name || guestRow.display_name,
           github_username: github_username || null,
           avatar_url: avatar_url || null,
           last_seen: new Date().toISOString(),
@@ -129,14 +130,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, action: "created" });
     } else {
       // Only user exists → no merge needed
-      // Update GitHub metadata in case it changed
+      // Update GitHub metadata and display_name in case it changed
+      const updateData: Record<string, unknown> = {
+        github_username: github_username || null,
+        avatar_url: avatar_url || null,
+        last_seen: new Date().toISOString(),
+      };
+      if (github_username) {
+        updateData.display_name = github_username;
+      } else if (display_name) {
+        updateData.display_name = display_name;
+      }
       await supabase
         .from("visitors")
-        .update({
-          github_username: github_username || null,
-          avatar_url: avatar_url || null,
-          last_seen: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq("user_id", user_id);
 
       return NextResponse.json({ success: true, action: "already_exists" });
