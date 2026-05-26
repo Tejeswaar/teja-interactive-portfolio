@@ -171,7 +171,7 @@ export default function LeaderboardClient() {
   }, []);
 
   const currentRankIndex = leaders.findIndex((entry) =>
-    (isLoggedIn && currentId && entry.github_username === currentId) ||
+    (isLoggedIn && currentId && (entry.github_username === currentId || entry.display_name === currentId)) ||
     (!isLoggedIn && guestName && entry.display_name === guestName)
   );
   const currentUserEntry = currentRankIndex >= 0 ? leaders[currentRankIndex] : null;
@@ -276,7 +276,7 @@ export default function LeaderboardClient() {
             {/* Rows */}
             {leaders.map((entry, i) => {
               const isCurrentUser =
-                (isLoggedIn && currentId && entry.github_username === currentId) ||
+                (isLoggedIn && currentId && (entry.github_username === currentId || entry.display_name === currentId)) ||
                 (!isLoggedIn && guestName && entry.display_name === guestName);
               const medal =
                 i === 0
