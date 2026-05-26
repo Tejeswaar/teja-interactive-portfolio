@@ -23,12 +23,13 @@ export async function GET(req: NextRequest) {
     const fields =
       "user_id, visitor_id, display_name, clicks, active_seconds, game_score, achievement_score, score, last_seen, avatar_url, github_username, achievements";
 
-    // 1. Always fetch top 10
-    const { data: top10, error: topErr } = await supabase
+    // 1. Fetch top players (we'll determine count after checking user rank)
+    //    Start with top 50 — will trim to 10 if user is ranked
+    const { data: topAll, error: topErr } = await supabase
       .from("visitors")
       .select(fields)
       .order("score", { ascending: false })
-      .limit(10);
+      .limit(50);
 
     if (topErr) {
       return NextResponse.json({ error: topErr.message }, { status: 500 });
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     // 3. If a user identity is provided, find their rank + context window
     let userRank: number | null = null;
-    let userContext: (typeof top10[0] & { rank: number })[] = [];
+    let userContext: (typeof topAll[0] & { rank: number })[] = [];
 
     // Determine which identity to look up
     const lookupColumn = userId ? "user_id" : visitorId ? "visitor_id" : null;
@@ -94,14 +95,19 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Attach ranks to top 10
-    const top10WithRanks = (top10 || []).map((entry, i) => ({
+    // If user is ranked, show top 10 (context window handles the rest)
+    // If user is NOT ranked, show top 50 so they have more to browse
+    const topLimit = userRank ? 10 : 50;
+    const topSlice = (topAll || []).slice(0, topLimit);
+
+    // Attach ranks
+    const topWithRanks = topSlice.map((entry, i) => ({
       ...entry,
       rank: i + 1,
     }));
 
     return NextResponse.json({
-      top10: top10WithRanks,
+      top10: topWithRanks,
       userContext,
       userRank,
       totalPlayers: totalPlayers ?? 0,

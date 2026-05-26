@@ -375,31 +375,21 @@ export default function LeaderboardClient() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mb-8 p-5 rounded-xl border border-ctp-surface1/40 bg-ctp-surface0/20 flex items-center justify-between"
+            className="mb-8 p-5 rounded-xl border border-ctp-surface1/40 bg-ctp-surface0/20 flex items-center gap-4"
           >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-ctp-surface1/40 flex items-center justify-center text-xl">
-                📊
-              </div>
-              <div>
-                <p className="font-mono text-sm text-ctp-text font-medium">
-                  You&apos;re not on the leaderboard yet
-                </p>
-                <p className="text-[10px] font-mono text-ctp-overlay0 mt-0.5">
-                  {isLoggedIn
-                    ? "Play any game to earn your spot on the leaderboard!"
-                    : "Login via GitHub or play any game to earn your spot on the leaderboard!"}
-                </p>
-              </div>
+            <div className="w-10 h-10 rounded-full bg-ctp-surface1/40 flex items-center justify-center text-xl shrink-0">
+              📊
             </div>
-            {!isLoggedIn && (
-              <button
-                onClick={login}
-                className="px-4 py-2 rounded-lg border border-ctp-mauve/40 bg-ctp-mauve/10 hover:bg-ctp-mauve/20 transition-all font-mono text-xs text-ctp-mauve shrink-0"
-              >
-                Login with GitHub
-              </button>
-            )}
+            <div>
+              <p className="font-mono text-sm text-ctp-text font-medium">
+                You&apos;re not on the leaderboard yet
+              </p>
+              <p className="text-[10px] font-mono text-ctp-overlay0 mt-0.5">
+                {isLoggedIn
+                  ? `Play any game to earn your spot on the leaderboard among ${totalPlayers.toLocaleString()} players!`
+                  : `Login via GitHub or play any game to earn your spot on the leaderboard among ${totalPlayers.toLocaleString()} players!`}
+              </p>
+            </div>
           </motion.div>
         )}
 
