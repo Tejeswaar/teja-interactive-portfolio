@@ -200,7 +200,7 @@ export default function EngagementTracker() {
         break;
       }
     }
-  }, [activeSeconds, activePopup]);
+  }, [activeSeconds, activePopup, pathname]);
 
   const dismissPopup = () => setActivePopup(null);
 

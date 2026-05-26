@@ -8,17 +8,17 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] font-mono p-8 md:p-16">
-      <div className="max-w-3xl mx-auto space-y-8 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg p-8 shadow-xl">
-        <h1 className="text-3xl font-bold mb-6 text-[var(--accent)]">
+    <main className="min-h-screen bg-ctp-base text-ctp-text font-mono p-8 md:p-16">
+      <div className="max-w-3xl mx-auto space-y-8 bg-ctp-mantle border border-ctp-surface1 rounded-lg p-8 shadow-xl">
+        <h1 className="text-3xl font-bold mb-6 text-ctp-blue">
           Privacy Policy
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">
+        <p className="text-sm text-ctp-subtext0">
           Last Updated: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
         </p>
 
         <section className="space-y-4 mt-8">
-          <h2 className="text-xl font-semibold border-b border-[var(--border)] pb-2">
+          <h2 className="text-xl font-semibold border-b border-ctp-surface1 pb-2">
             1. Information Collection
           </h2>
           <p>
@@ -35,7 +35,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b border-[var(--border)] pb-2">
+          <h2 className="text-xl font-semibold border-b border-ctp-surface1 pb-2">
             2. How Information is Used
           </h2>
           <p>The collected information is used strictly to:</p>
@@ -47,7 +47,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b border-[var(--border)] pb-2">
+          <h2 className="text-xl font-semibold border-b border-ctp-surface1 pb-2">
             3. Local Storage and Cookies
           </h2>
           <p>
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b border-[var(--border)] pb-2">
+          <h2 className="text-xl font-semibold border-b border-ctp-surface1 pb-2">
             4. Data Sharing
           </h2>
           <p>
@@ -65,12 +65,12 @@ export default function PrivacyPolicyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b border-[var(--border)] pb-2">
+          <h2 className="text-xl font-semibold border-b border-ctp-surface1 pb-2">
             5. Contact
           </h2>
           <p>
             If you have questions about this policy or wish to have your leaderboard data removed, please contact me at:{" "}
-            <a href="mailto:tejeswaarreddy@gmail.com" className="text-[var(--accent)] hover:underline">
+            <a href="mailto:tejeswaarreddy@gmail.com" className="text-ctp-blue hover:underline">
               tejeswaarreddy@gmail.com
             </a>
           </p>

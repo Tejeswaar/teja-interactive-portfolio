@@ -24,7 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     // We can manually add important project slugs here if needed
     {
-      url: `${baseUrl}/projects/mixmash`,
+      url: `${baseUrl}/projects/mix-mash`,
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.7,
