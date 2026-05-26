@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useIdentity } from "../components/AuthProvider";
 
 interface LeaderboardEntry {
+  user_id?: string;
   display_name: string;
   clicks: number;
   active_seconds: number;
@@ -156,9 +157,6 @@ export default function LeaderboardClient() {
   const [guestName, setGuestName] = useState<string | null>(null);
   const { isLoggedIn, user, visitor_id, login } = useIdentity();
 
-  // Determine current user's identity value for highlighting
-  const currentId = user?.user_metadata?.user_name || visitor_id;
-
   useEffect(() => {
     setGuestName(localStorage.getItem("guest_display_name"));
     fetch("/api/leaderboard")
@@ -171,7 +169,7 @@ export default function LeaderboardClient() {
   }, []);
 
   const currentRankIndex = leaders.findIndex((entry) =>
-    (isLoggedIn && currentId && (entry.github_username === currentId || entry.display_name === currentId)) ||
+    (isLoggedIn && user && entry.user_id === user.id) ||
     (!isLoggedIn && guestName && entry.display_name === guestName)
   );
   const currentUserEntry = currentRankIndex >= 0 ? leaders[currentRankIndex] : null;
@@ -276,7 +274,7 @@ export default function LeaderboardClient() {
             {/* Rows */}
             {leaders.map((entry, i) => {
               const isCurrentUser =
-                (isLoggedIn && currentId && (entry.github_username === currentId || entry.display_name === currentId)) ||
+                (isLoggedIn && user && entry.user_id === user.id) ||
                 (!isLoggedIn && guestName && entry.display_name === guestName);
               const medal =
                 i === 0

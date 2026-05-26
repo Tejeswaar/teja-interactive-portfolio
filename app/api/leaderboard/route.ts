@@ -20,7 +20,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("visitors")
       .select(
-        "display_name, clicks, active_seconds, game_score, achievement_score, score, last_seen, avatar_url, github_username, achievements"
+        "user_id, display_name, clicks, active_seconds, game_score, achievement_score, score, last_seen, avatar_url, github_username, achievements"
       )
       .order("score", { ascending: false })
       .limit(20);
