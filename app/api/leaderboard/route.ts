@@ -64,15 +64,17 @@ export async function GET(req: NextRequest) {
 
         userRank = (higherCount ?? 0) + 1;
 
-        // Only fetch context if user is NOT in top 10
-        if (userRank > 10) {
-          const contextRadius = 25;
-          // We need ranks (userRank - 25) to (userRank + 25)
-          // But skip anything already in top 10
-          const contextStart = Math.max(userRank - contextRadius, 11); // never overlap with top 10
-          const contextEnd = userRank + contextRadius;
+        // Fetch context window: 25 above and 25 below the user's rank
+        // But never overlap with top 10 (context starts at rank 11 minimum)
+        const contextRadius = 25;
+        const contextStart = Math.max(
+          userRank <= 10 ? 11 : userRank - contextRadius,
+          11
+        );
+        const contextEnd = userRank + contextRadius;
 
-          // offset is 0-indexed, contextStart is 1-indexed rank
+        // Only fetch if there are rows beyond top 10
+        if (contextEnd > 10) {
           const offset = contextStart - 1;
           const limit = contextEnd - contextStart + 1;
 
@@ -82,7 +84,7 @@ export async function GET(req: NextRequest) {
             .order("score", { ascending: false })
             .range(offset, offset + limit - 1);
 
-          if (contextData) {
+          if (contextData && contextData.length > 0) {
             userContext = contextData.map((entry, i) => ({
               ...entry,
               rank: contextStart + i,
