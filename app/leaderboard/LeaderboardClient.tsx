@@ -408,49 +408,51 @@ export default function LeaderboardClient() {
             </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {/* Table header */}
-            <div className="grid grid-cols-[3rem_1fr_4rem_4rem_4rem_4rem_5rem] gap-2 px-4 py-2 text-[10px] font-mono text-ctp-overlay0 uppercase tracking-wider">
-              <span>Rank</span>
-              <span>Player</span>
-              <span className="text-center">Time</span>
-              <span className="text-center">Clicks</span>
-              <span className="text-center">Game</span>
-              <span className="text-center">Achv.</span>
-              <span className="text-center">Score</span>
-            </div>
-
-            {/* Top 10 rows */}
-            {top10.map((entry, i) => (
-              <LeaderboardRow
-                key={`top-${entry.rank}`}
-                entry={entry}
-                isCurrentUser={findCurrentUser(entry)}
-                animationIndex={i}
-              />
-            ))}
-
-            {/* Gap separator — only when user context doesn't start at rank 11 */}
-            {showGap && (
-              <div className="flex items-center gap-3 py-3 px-4">
-                <div className="flex-1 border-t border-ctp-surface1/40" />
-                <span className="font-mono text-[10px] text-ctp-overlay0">
-                  · · ·
-                </span>
-                <div className="flex-1 border-t border-ctp-surface1/40" />
+          <div className="overflow-x-auto pb-4 -mx-6 px-6 sm:mx-0 sm:px-0">
+            <div className="space-y-2 min-w-[600px]">
+              {/* Table header */}
+              <div className="grid grid-cols-[3rem_1fr_4rem_4rem_4rem_4rem_5rem] gap-2 px-4 py-2 text-[10px] font-mono text-ctp-overlay0 uppercase tracking-wider">
+                <span>Rank</span>
+                <span>Player</span>
+                <span className="text-center">Time</span>
+                <span className="text-center">Clicks</span>
+                <span className="text-center">Game</span>
+                <span className="text-center">Achv.</span>
+                <span className="text-center">Score</span>
               </div>
-            )}
 
-            {/* User context rows (seamless or after gap) */}
-            {(isSeamless || showGap) &&
-              userContext.map((entry, i) => (
+              {/* Top 10 rows */}
+              {top10.map((entry, i) => (
                 <LeaderboardRow
-                  key={`ctx-${entry.rank}`}
+                  key={`top-${entry.rank}`}
                   entry={entry}
                   isCurrentUser={findCurrentUser(entry)}
-                  animationIndex={top10.length + i}
+                  animationIndex={i}
                 />
               ))}
+
+              {/* Gap separator — only when user context doesn't start at rank 11 */}
+              {showGap && (
+                <div className="flex items-center gap-3 py-3 px-4">
+                  <div className="flex-1 border-t border-ctp-surface1/40" />
+                  <span className="font-mono text-[10px] text-ctp-overlay0">
+                    · · ·
+                  </span>
+                  <div className="flex-1 border-t border-ctp-surface1/40" />
+                </div>
+              )}
+
+              {/* User context rows (seamless or after gap) */}
+              {(isSeamless || showGap) &&
+                userContext.map((entry, i) => (
+                  <LeaderboardRow
+                    key={`ctx-${entry.rank}`}
+                    entry={entry}
+                    isCurrentUser={findCurrentUser(entry)}
+                    animationIndex={top10.length + i}
+                  />
+                ))}
+            </div>
           </div>
         )}
 
